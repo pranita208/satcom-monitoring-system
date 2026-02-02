@@ -1,8 +1,8 @@
 import socket
 import time
-import random
 
 from common.packet import deserialize, serialize
+from satellite.link_model import DynamicLinkModel
 
 
 # ---------------- CONFIG ----------------
@@ -11,9 +11,6 @@ LISTEN_PORT = 5001
 
 RECEIVER_IP = "127.0.0.1"
 RECEIVER_PORT = 5002
-
-DELAY_MS = 600          # Simulated propagation delay (ms)
-PACKET_LOSS_PROB = 0.1  # 10% packet loss
 # ----------------------------------------
 
 
@@ -23,29 +20,34 @@ def main():
 
     sock_out = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    # Create dynamic link model
+    link_model = DynamicLinkModel()
+
     print("[SATELLITE] Satellite node started")
-    print(
-        f"[SATELLITE] Delay={DELAY_MS} ms | "
-        f"Packet Loss={PACKET_LOSS_PROB * 100:.0f}%"
-    )
+    print("[SATELLITE] Dynamic link model enabled")
 
     try:
         while True:
             data, addr = sock_in.recvfrom(4096)
             packet = deserialize(data)
 
-            # Simulate packet loss
-            if random.random() < PACKET_LOSS_PROB:
+            # Update link state based on time
+            link_model.update_state()
+
+            # Decide packet loss
+            if link_model.should_drop_packet():
                 print(
-                    f"[SATELLITE] DROPPED packet | "
+                    f"[SATELLITE] DROPPED | "
+                    f"state={link_model.current_state.value} | "
                     f"seq={packet['seq_num']}"
                 )
                 continue
 
-            # Simulate propagation delay
-            time.sleep(DELAY_MS / 1000.0)
+            # Apply dynamic delay
+            delay_ms = link_model.get_delay_ms()
+            time.sleep(delay_ms / 1000.0)
 
-            # Decrement TTL (observational)
+            # Decrement TTL
             packet["ttl"] -= 1
             if packet["ttl"] <= 0:
                 print(
@@ -61,9 +63,10 @@ def main():
             )
 
             print(
-                f"[SATELLITE] FORWARDED packet | "
-                f"seq={packet['seq_num']} | "
-                f"ttl={packet['ttl']}"
+                f"[SATELLITE] FORWARDED | "
+                f"state={link_model.current_state.value} | "
+                f"delay={delay_ms} ms | "
+                f"seq={packet['seq_num']}"
             )
 
     except KeyboardInterrupt:
