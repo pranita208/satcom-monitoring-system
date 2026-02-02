@@ -2,6 +2,7 @@ import socket
 import time
 
 from common.packet import deserialize
+from metrics.engine import LinkHealthEngine
 
 
 # ---------------- CONFIG ----------------
@@ -19,12 +20,21 @@ def main():
     print("[RECEIVER] Receiver node started")
     print(f"[RECEIVER] Listening on {LISTEN_IP}:{LISTEN_PORT}")
 
+    EXPECTED_THROUGHPUT = 1024  # bytes/sec
+
+    health_engine = LinkHealthEngine(
+        expected_throughput=EXPECTED_THROUGHPUT
+    )
+
     expected_seq = 0
     received_packets = 0
     lost_packets = 0
     total_bytes = 0
+
     start_time = time.time()
     last_log_time = start_time
+
+    latency_samples = []
 
     try:
         while True:
@@ -39,6 +49,11 @@ def main():
 
             # Latency calculation (ms)
             latency_ms = (now - send_ts) * 1000
+            latency_samples.append(latency_ms)
+
+            # Keep only last 50 samples (rolling window)
+            if len(latency_samples) > 50:
+                latency_samples.pop(0)
 
             # Packet loss detection
             if seq > expected_seq:
@@ -50,24 +65,37 @@ def main():
 
             print(
                 f"[RECEIVER] Packet received | "
-                f"seq={seq} | "
-                f"latency={latency_ms:.2f} ms"
+                f"seq={seq} | latency={latency_ms:.2f} ms"
             )
 
             # Periodic metrics log
             if now - last_log_time >= LOG_INTERVAL_SEC:
                 elapsed = now - start_time
                 throughput = total_bytes / elapsed if elapsed > 0 else 0
+
                 loss_percent = (
                     (lost_packets / (received_packets + lost_packets)) * 100
                     if (received_packets + lost_packets) > 0 else 0
                 )
 
+                avg_latency = (
+                    sum(latency_samples) / len(latency_samples)
+                    if latency_samples else 0
+                )
+
+                health_score = health_engine.compute_health(
+                    avg_latency_ms=avg_latency,
+                    packet_loss_percent=loss_percent,
+                    throughput=throughput
+                )
+
                 print("\n[RECEIVER METRICS]")
-                print(f"  Received packets : {received_packets}")
-                print(f"  Lost packets     : {lost_packets}")
-                print(f"  Packet loss (%)  : {loss_percent:.2f}")
-                print(f"  Throughput       : {throughput:.2f} bytes/sec\n")
+                print(f"  Received packets  : {received_packets}")
+                print(f"  Lost packets      : {lost_packets}")
+                print(f"  Packet loss (%)   : {loss_percent:.2f}")
+                print(f"  Throughput        : {throughput:.2f} bytes/sec")
+                print(f"  Avg latency       : {avg_latency:.2f} ms")
+                print(f"  Link health score : {health_score:.2f} / 100\n")
 
                 last_log_time = now
 
