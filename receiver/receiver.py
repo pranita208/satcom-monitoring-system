@@ -1,8 +1,11 @@
 import socket
 import time
 
+
 from common.packet import deserialize
 from metrics.engine import LinkHealthEngine
+from prometheus_client import start_http_server, Gauge
+
 
 
 # ---------------- CONFIG ----------------
@@ -12,10 +15,36 @@ LISTEN_PORT = 5002
 LOG_INTERVAL_SEC = 5
 # ----------------------------------------
 
+# -------- Prometheus Metrics --------
+LATENCY_GAUGE = Gauge(
+    "satcom_latency_ms",
+    "Average end-to-end latency in milliseconds"
+)
+
+PACKET_LOSS_GAUGE = Gauge(
+    "satcom_packet_loss_percent",
+    "Packet loss percentage"
+)
+
+THROUGHPUT_GAUGE = Gauge(
+    "satcom_throughput_bytes_per_sec",
+    "Throughput in bytes per second"
+)
+
+HEALTH_SCORE_GAUGE = Gauge(
+    "satcom_health_score",
+    "Overall satellite link health score"
+)
+# -----------------------------------
+
 
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((LISTEN_IP, LISTEN_PORT))
+    # Start Prometheus metrics server
+    start_http_server(8000)
+    print("[RECEIVER] Prometheus metrics exposed on :8000/metrics")
+
 
     print("[RECEIVER] Receiver node started")
     print(f"[RECEIVER] Listening on {LISTEN_IP}:{LISTEN_PORT}")
@@ -88,7 +117,7 @@ def main():
                     packet_loss_percent=loss_percent,
                     throughput=throughput
                 )
-
+                
                 print("\n[RECEIVER METRICS]")
                 print(f"  Received packets  : {received_packets}")
                 print(f"  Lost packets      : {lost_packets}")
@@ -96,8 +125,17 @@ def main():
                 print(f"  Throughput        : {throughput:.2f} bytes/sec")
                 print(f"  Avg latency       : {avg_latency:.2f} ms")
                 print(f"  Link health score : {health_score:.2f} / 100\n")
-
+                
+                LATENCY_GAUGE.set(avg_latency)
+                PACKET_LOSS_GAUGE.set(loss_percent)
+                THROUGHPUT_GAUGE.set(throughput)
+                HEALTH_SCORE_GAUGE.set(health_score)
                 last_log_time = now
+                
+                # Export health score for adaptive sender
+                with open("link_health.txt", "w") as f:
+                  f.write(f"{health_score:.2f}")
+
 
     except KeyboardInterrupt:
         print("\n[RECEIVER] Shutting down receiver")
