@@ -158,6 +158,16 @@ Grafana
 
 Git
 
+
+## 🏗️ Engineering Highlights
+
+- Time-driven satellite link state transitions (GOOD → DEGRADED → BAD → OUTAGE)
+- Rolling window latency smoothing for realistic metric stability
+- Composite health scoring engine with weighted penalties
+- Closed-loop adaptive sender adjusting transmission rate
+- Pull-based observability architecture using Prometheus
+- Threshold-based operational visualization in Grafana
+
 ## 💡 Real-World Relevance
 
 This system mimics real satellite communication challenges such as:
