@@ -107,11 +107,11 @@ python -m receiver.receiver
 ```bash
 python -m satellite.satellite
 ```
-3️⃣ Start Sender
+### 3️⃣ Start Sender
 ```bash
 python -m sender.sender
 ```
-4️⃣ Start Prometheus
+### 4️⃣ Start Prometheus
 ```bash
 .\prometheus.exe
 ```
@@ -120,19 +120,19 @@ Access:
 ```bash
 http://localhost:9090
 ```
-5️⃣ Open Grafana
+### 5️⃣ Open Grafana
 ```bash
 http://localhost:3000
 ```
-📸 Dashboard Preview
+## 📸 Dashboard Preview
 ### 🔹 Overall Monitoring Dashboard
 ![Dashboard Overview](assets/satellite_healthgraph.png)
 
-### 🔹 Degradation Spike
+### 🔹 Latency, Throughput and Packet loss
 ![Latency, Throughput and Packet loss metrics](assets/metrics_graph.png)
 
 
-🧪 Observed Behavior
+## 🧪 Observed Behavior
 
 The system demonstrates:
 
@@ -146,7 +146,7 @@ Health score recovery after stabilization
 
 Adaptive sender rate adjustment based on link quality
 
-📦 Tech Stack
+## 📦 Tech Stack
 
 Python 3.10+
 
