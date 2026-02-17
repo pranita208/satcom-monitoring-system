@@ -104,22 +104,26 @@ python -m receiver.receiver
 ```
 
 ### 2️⃣ Start Satellite
+```bash
 python -m satellite.satellite
-
+```
 3️⃣ Start Sender
+```bash
 python -m sender.sender
-
+```
 4️⃣ Start Prometheus
+```bash
 .\prometheus.exe
-
+```
 
 Access:
-
+```bash
 http://localhost:9090
-
+```
 5️⃣ Open Grafana
+```bash
 http://localhost:3000
-
+```
 📸 Dashboard Preview
 ### 🔹 Overall Monitoring Dashboard
 ![Dashboard Overview](assets/satellite_healthgraph.png)
