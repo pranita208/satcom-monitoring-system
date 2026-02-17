@@ -20,16 +20,7 @@ This project implements a dynamic satellite link emulator with adaptive transmis
 
 ## 🏗️ System Architecture
 
-Sender (Ground Station)
-↓
-Satellite Node (Dynamic Link Model)
-↓
-Receiver (Metrics + Health Engine)
-↓
-Prometheus (Time-Series Storage)
-↓
-Grafana (Dashboard Visualization)
-
+![System Architecture](assets/architecture.png)
 
 ---
 
@@ -124,6 +115,8 @@ http://localhost:9090
 ```bash
 http://localhost:3000
 ```
+---
+
 ## 📸 Dashboard Preview
 ### 🔹 Overall Monitoring Dashboard
 ![Dashboard Overview](assets/satellite_healthgraph.png)
@@ -131,6 +124,7 @@ http://localhost:3000
 ### 🔹 Latency, Throughput and Packet loss
 ![Latency, Throughput and Packet loss metrics](assets/metrics_graph.png)
 
+---
 
 ## 🧪 Observed Behavior
 
@@ -146,6 +140,8 @@ Health score recovery after stabilization
 
 Adaptive sender rate adjustment based on link quality
 
+---
+
 ## 📦 Tech Stack
 
 Python 3.10+
@@ -158,6 +154,7 @@ Grafana
 
 Git
 
+---
 
 ## 🏗️ Engineering Highlights
 
@@ -167,6 +164,8 @@ Git
 - Closed-loop adaptive sender adjusting transmission rate
 - Pull-based observability architecture using Prometheus
 - Threshold-based operational visualization in Grafana
+
+---
 
 ## 💡 Real-World Relevance
 
@@ -182,3 +181,5 @@ Such monitoring systems are critical in:
 - Maritime communication systems
 - Defense satellite operations
 - Remote IoT networks
+
+---
